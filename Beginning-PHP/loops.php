@@ -2,15 +2,26 @@
 
 include 'list.php';
 
-$status = true;
+// this will display todo items, based on being completed or not
+$status = "all";
+
+// this will hold the outer array indices that match the $status
 $filter = array();
 
-foreach($list as $key => $item){
-  if($status === "all" || $item['complete'] === $status){
-    // save the array index value of list's outer layer
-    $filter[] = $key;
-  }
+foreach($list as $mainKey => $item){
+	// if the given multi-array's "Complete" value matches $status,
+	// then place the array index number to the $filter array
+	if($status === "all" || $item['complete'] === $status){
+		$filter[$mainKey] = $item['priority'];
+	}
 }
+
+echo '<pre>';
+var_dump($filter);
+echo '</pre>';
+echo '<pre>';
+var_dump($list);
+echo '</pre>';
 
 echo "<table>";
 echo "<tr>";
@@ -22,33 +33,22 @@ echo "</tr>";
 
 // Loop through array and display values in an HTML table
 foreach($filter as $id){
-  echo "<tr>";
-  echo "<td>" . $list[$id]['title'] . "</td>";
-  echo "<td>" . $list[$id]['priority'] . "</td>";
-  echo "<td>" . $list[$id]['due'] . "</td>";
-  echo "<td>";
-  
-  // Display Yes/No value for boolean value within the list array
-  if($list[$id]['complete']){
-    echo "Yes"; 
-  }else{
-    echo "No";
-  }
-  echo "</td>";
+	echo "<tr>";
+	echo "<td>" . $list[$id]['title'] . "</td>";
+	echo "<td>" . $list[$id]['priority'] . "</td>";
+	echo "<td>" . $list[$id]['due'] . "</td>";
+	echo "<td>";
+
+	// Display Yes/No value for boolean value within the list array
+	if($list[$id]['complete']){
+		echo "Yes"; 
+	} else{
+		echo "No";
+	}
+	echo "</td>";
 }
 
 echo "</tr>";
 echo "</table>";
 
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
-</html>
