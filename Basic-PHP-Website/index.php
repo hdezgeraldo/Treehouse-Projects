@@ -16,7 +16,7 @@ include 'inc/header.php' ?>
 					$random = array_rand($catalog, 4);
 					// Display each item in the catalog array
 					foreach($random as $id){
-						echo get_item_html($catalog, $catalog[$id]);
+						echo get_item_html($id, $catalog[$id]);
 					}
 				?>				
 			</ul>

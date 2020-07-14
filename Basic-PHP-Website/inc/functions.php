@@ -7,13 +7,14 @@
  * Paramters: (1) item id, (2) interior array for single item
  * Return: string that returns HTML 
  ***************************************************************/
-function get_item_html($id, $item){
-	$output = "<li><a href='#'><img src='"
-		. $item["img"] . "' alt='" 
-		. $item["title"] . "' />" 
-		. "<p>View Details</p>" 
-		. "</a></li>";
-	return $output;
+function get_item_html($id,$item) {
+    $output = "<li><a href='details.php?id="
+        . $id . "'><img src='" 
+        . $item["img"] . "' alt='" 
+        . $item["title"] . "' />" 
+        . "<p>View Details</p>"
+        . "</a></li>";
+    return $output;
 }
 
 /****************************************************************
@@ -24,21 +25,24 @@ function get_item_html($id, $item){
  * Return: array containing target array indices
  ***************************************************************/
 function array_category($catalog, $category){
-	if($category == null){
-		// return all keys of an array if no category is selected
-		return array_keys($catalog);
-	}
 	$output = array();
 
 	// loop through each of the array, and see if the target value
 	// matches the category from the parameter
 	foreach($catalog as $id => $item){
-		if(strtolower($category) == strtolower($item['category'])){
-			$output[] = $id;
+		if($category == null OR strtolower($category) == strtolower($item['category'])){
+			// add only the keys
+			$sort = $item['title'];
+			$sort = ltrim($sort, "The ");
+			$sort = ltrim($sort, "A ");
+			$sort = ltrim($sort, "An ");
+			$output[$id] = $sort;
 		}
 	}
 
-	return $output;
+	asort($output);
+
+	return array_keys($output);
 }
 
 ?>
