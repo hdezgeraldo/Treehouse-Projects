@@ -1,3 +1,8 @@
-const listItems = document.getElementsByTagName('li');
+const input = document.querySelector('input');
+const p = document.querySelector('p.description');
+const button = document.querySelector('button');
 
-listItems.style.color = "purple";
+button.addEventListener('click', () => {
+    p.innerHTML = input.value + ':';
+});
+
