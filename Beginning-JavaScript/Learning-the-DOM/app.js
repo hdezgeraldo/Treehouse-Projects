@@ -6,3 +6,4 @@ button.addEventListener('click', () => {
     p.innerHTML = input.value + ':';
 });
 
+p.title = "list description";
