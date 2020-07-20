@@ -6,7 +6,7 @@ function full_catalog_array(){
 	// Within try-catch block, ONLY code that interacts with database
 	try {
 		// pass the query method as a string, returns "PDO statement" object 
-		$results = $db->query("SELECT title, category,img FROM Media");
+		$results = $db->query("SELECT media_id, title, category,img FROM Media");
 	} catch(Exception $e){
 		echo "Unable to retrieve results";
 		exit;
@@ -16,9 +16,31 @@ function full_catalog_array(){
 	return $catalog;
 }
 
+// we pass an $id of target item since we only want information on a single item
+function single_item_array($id){
+	include("connection.php");
+	// Within try-catch block, ONLY code that interacts with database
+	try {
+		// pass the query method as a string, returns "PDO statement" object 
+		$results = $db->query(
+			"SELECT Media.media_id, title, category, img, format, year, genre, publisher, isbn
+			FROM Media
+			INNER JOIN Genres ON Media.genre_id = Genres.genre_id
+			LEFT JOIN Books ON Media.media_id = Books.media_id
+			WHERE Media.media_id = $id"
+		);
+	} catch(Exception $e){
+		echo "Unable to retrieve results";
+		exit;
+	}
+	// We only want to use fetch, instead of fetchAll()
+	$catalog = $results->fetch();
+	return $catalog;
+}
+
 function get_item_html($id,$item) {
 	$output = "<li><a href='details.php?id="
-		. $id . "'><img src='" 
+		. $item["media_id"] . "'><img src='" 
 		. $item["img"] . "' alt='" 
 		. $item["title"] . "' />" 
 		. "<p>View Details</p>"
