@@ -20,7 +20,6 @@ include("inc/header.php"); ?>
 				</ul>
 
 			</div>
-
 		</div>
 
 <?php include("inc/footer.php"); ?>

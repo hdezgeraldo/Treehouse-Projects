@@ -1,12 +1,96 @@
 <?php
 
-// avoid code duplications by placing query functions inside its own PHP file
-function full_catalog_array(){
+function get_genre_category(){
+    include("connection.php");
+    try{
+        $sql = "SELECT G.genre, GC.category
+            FROM Genres G
+            INNER JOIN Genre_Categories GC ON G.genre_id = GC.genre_id
+            ORDER BY GC.category, G.genre";
+        $results = $db->query($sql);
+    }catch(Exception $e){
+        echo "bad query";
+    }
+    $genres = $results->fetchAll();
+    return $genres;
+}
+
+function get_genre_html($item) {
+//    <optgroup label="Books">
+//        <option value="Action"<?php
+//        if (isset($genre) && $genre=="Action") {
+//            echo " selected";
+//        } >>Action</option>
+
+    $output = "<li><a href='details.php?id="
+        . $item["media_id"] . "'><img src='"
+        . $item["img"] . "' alt='"
+        . $item["title"] . "' />"
+        . "<p>View Details</p>"
+        . "</a></li>";
+    return $output;
+}
+
+/**************************************************************
+ * NAME: Get Catalog Count
+ * DESCRIPTION: This function will run a SQL query to obtain the
+ * count of the media items based on the specific category
+ * PARAM: (1) String for category, default to NUULL
+ * RETURN: returns a multi-array
+ *************************************************************/
+function get_catalog_count($category = null){
+	include("connection.php");
+    $category = strtolower($category);
+	try{
+		// count all the items in the database
+		$sql = "SELECT COUNT(media_id) FROM Media";
+		if(!empty($category)){
+			$result = $db->prepare(
+				$sql 
+				. " WHERE LOWER(category) = ?"
+			);
+			$result->bindParam(1, $category, PDO::PARAM_STR);
+		} else{
+            $result = $db->prepare($sql);
+        }
+		$result->execute();
+
+	}catch(Exception $e){
+        echo "bad query";
+	}
+	$count = $result->fetchColumn(0);
+	return $count;
+}
+
+/**************************************************************
+ * NAME: Full Catalog Array
+ * DESCRIPTION: This function will run a SQL query to obtain the
+ * entire catalog multi-array
+ * PARAM: None
+ * RETURN: returns a multi-array
+ **************************************************************/
+function full_catalog_array($limit = null, $offset = 0){
 	include("connection.php");
 	// Within try-catch block, ONLY code that interacts with database
 	try {
 		// pass the query method as a string, returns "PDO statement" object 
-		$results = $db->query("SELECT media_id, title, category,img FROM Media");
+		$sql = "SELECT media_id, title, category, img 
+			FROM Media
+			ORDER BY 
+			REPLACE(
+				REPLACE(
+					REPLACE(title, 'The ', ''), 
+					'An ', ''), 
+					'A ', ''
+			)";
+		if(is_integer($limit)){
+			$results = $db->prepare($sql . " LIMIT ? OFFSET ?");
+			$results->bindParam(1, $limit, PDO::PARAM_INT);
+			$results->bindParam(2, $offset, PDO::PARAM_INT);
+		} else{
+			$results = $db->prepare($sql);
+		}
+		$results->execute();
 	} catch(Exception $e){
 		echo "Unable to retrieve results";
 		exit;
@@ -16,6 +100,53 @@ function full_catalog_array(){
 	return $catalog;
 }
 
+/**************************************************************
+ * NAME: Category Catalog Array
+ * DESCRIPTION: This function will 
+ * PARAM: None
+ * RETURN: returns a multi-array
+ **************************************************************/
+function category_catalog_array($category, $limit = null, $offset = 0){
+	include("connection.php");
+	// Within try-catch block, ONLY code that interacts with database
+	try {
+		// pass the query method as a string, returns "PDO statement" object 
+		$sql = "SELECT media_id, title, category,img 
+			FROM Media
+			WHERE LOWER(category) = ?
+			ORDER BY 
+			REPLACE(
+				REPLACE(
+					REPLACE(title, 'The ', ''), 
+					'An ', ''), 
+					'A ', ''
+			)";
+		if(is_integer($limit)){
+			$results = $db->prepare($sql . " LIMIT ? OFFSET ?");
+			$results->bindParam(1, $category, PDO::PARAM_STR);
+			$results->bindParam(2, $limit, PDO::PARAM_INT);
+			$results->bindParam(3, $offset, PDO::PARAM_INT);
+		} else{
+			$results = $db->prepare($sql);
+			$results->bindParam(1, $category, PDO::PARAM_STR);
+		}
+		$results->execute();
+	} catch(Exception $e){
+		echo "Unable to retrieve results";
+		exit;
+	}
+
+	$catalog = $results->fetchAll();
+	return $catalog;
+}
+
+/**************************************************************
+ * NAME: Random Catalog Array
+ * DESCRIPTION: This function will run a SQL query to obtain a
+ * random array with 4 items
+ * PARAM: None
+ * RETURN: returns a multi-array
+ **************************************************************/
 function random_catalog_array(){
 	include("connection.php");
 	// Within try-catch block, ONLY code that interacts with database
@@ -36,7 +167,13 @@ function random_catalog_array(){
 	return $catalog;
 }
 
-// we pass an $id of target item since we only want information on a single item
+/**************************************************************
+ * NAME: Single Item Array
+ * DESCRIPTION: This function will run a SQL query to select
+ * a single catalog item that matches a given media ID
+ * PARAM: (1) integer
+ * RETURN: returns a multi-array
+ **************************************************************/
 function single_item_array($id){
 	include("connection.php");
 	// Within try-catch block, ONLY code that interacts with database
@@ -90,10 +227,17 @@ function single_item_array($id){
 		// organize the people as they go, into the existing multi-dimensional array
 		$item[$row['role']][] = $row["fullname"];
 	}
-
 	return $item;
 }
 
+/**************************************************************
+ * NAME: Get Item HTML
+ * DESCRIPTION: This function will create a string that contains
+ * the HTML elements and catalog item with specific parameters
+ * to display to the page
+ * PARAM: Pass an item from the Catalog array
+ * RETURN: return a string
+ **************************************************************/
 function get_item_html($item) {
 	$output = "<li><a href='details.php?id="
 		. $item["media_id"] . "'><img src='" 
@@ -104,6 +248,14 @@ function get_item_html($item) {
 	return $output;
 }
 
+/**************************************************************
+ * NAME: Array Category
+ * DESCRIPTION: This function will iterate through the entire
+ * catalog array and and obtain the Media item's ID and title
+ * to sort, then store into an array with ONLY the keys
+ * PARAM: (1) catalog array, (2) string with target category
+ * RETURN: an array of integers
+ **************************************************************/
 function array_category($catalog,$category) {
 	$output = array();
 	
