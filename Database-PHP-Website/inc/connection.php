@@ -8,7 +8,7 @@
 // Within try-catch block, ONLY code that interacts with database
 try{
 	// new PHP Data Object, allowing PHP to interact with DB
-	$dsn = "mysql:host=localhost;dbname=database;port=8888;";
+	$dsn = "mysql:host=localhost;dbname=databas;port=8888;";
 	$username = "root";
 	$password = "root";
 	
